@@ -48,7 +48,7 @@ RCT_EXPORT_MODULE();
 -(BOOL) isPrime:(int) n
 {
     // TODO OPT only check primes
-    for (int ii = 3; ii <= (self.lastRoot+1); ii++)
+    for (int ii = 3; ii <= (self.lastRoot+1); ii += 2)
     {
         if ((n % ii) == 0)
         {
