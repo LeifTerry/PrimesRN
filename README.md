@@ -31,7 +31,7 @@ You will need to install Xcode and/or Android Studio to build for each native pl
 Install the project dependencies:
 
 ```
-nom install
+npm install
 ```
 
 Run on iOS simulator:
