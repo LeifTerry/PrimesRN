@@ -322,8 +322,8 @@
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
-		C4D377A7216249DC00C51424 /* PrimeFinder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PrimeFinder.h; path = PrimesRN/PrimeFinder.h; sourceTree = "<group>"; };
-		C4D377A8216249DC00C51424 /* PrimeFinder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PrimeFinder.m; path = PrimesRN/PrimeFinder.m; sourceTree = "<group>"; };
+		C4D377A7216249DC00C51424 /* PrimeFinder.h */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.c.h; name = PrimeFinder.h; path = PrimesRN/PrimeFinder.h; sourceTree = "<group>"; tabWidth = 4; };
+		C4D377A8216249DC00C51424 /* PrimeFinder.m */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; name = PrimeFinder.m; path = PrimesRN/PrimeFinder.m; sourceTree = "<group>"; tabWidth = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
