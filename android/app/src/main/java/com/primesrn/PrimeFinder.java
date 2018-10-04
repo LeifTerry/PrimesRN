@@ -70,56 +70,47 @@ public class PrimeFinder extends ReactContextBaseJavaModule
         this.nextNotable = 10;
         this.batchSize = 10;
      
-        final PrimeFinder thisRef = this;
-        Thread thread = new Thread() 
+        int foundThisBatch = 0;
+        for (int ii = this.primeList[1] + 2; ; ii += 2) // don't bother checking evens
         {
-            @Override
-            public void run() 
+            this.lastRoot -= (this.lastRoot * this.lastRoot - ii) / (2 * this.lastRoot);
+
+            if (isPrime(ii))
             {
-                    int foundThisBatch = 0;
-                    for (int ii = thisRef.primeList[1] + 2; ; ii += 2) // don't bother checking evens
-                    {
-                        thisRef.lastRoot -= (thisRef.lastRoot * thisRef.lastRoot - ii) / (2 * thisRef.lastRoot);
+                this.primeList[this.primesFound] = ii;
+                this.primesFound++;
+                foundThisBatch++;
 
-                        if (isPrime(ii))
-                        {
-                            thisRef.primeList[thisRef.primesFound] = ii;
-                            thisRef.primesFound++;
-                            foundThisBatch++;
+                if (this.primesFound == this.nextNotable)
+                {
+                    WritableMap eventData = Arguments.createMap();
+                    eventData.putInt("prime", ii);
+                    eventData.putInt("numFound", this.primesFound);
+                    eventData.putBoolean("isNotable", true);
+                    sendEvent("foundPrime", eventData);
 
-                            if (thisRef.primesFound == thisRef.nextNotable)
-                            {
-                                WritableMap eventData = Arguments.createMap();
-                                eventData.putInt("prime", ii);
-                                eventData.putInt("numFound", thisRef.primesFound);
-                                eventData.putBoolean("isNotable", true);
-                                sendEvent("foundPrime", eventData);
+                    // increase batch size and notable threshold
+                    this.batchSize = this.nextNotable;
+                    this.nextNotable *= 10;
+                    foundThisBatch = 0;
+                }
+                else if (foundThisBatch == this.batchSize)
+                {
+                    WritableMap eventData = Arguments.createMap();
+                    eventData.putInt("prime", ii);
+                    eventData.putInt("numFound", this.primesFound);
+                    eventData.putBoolean("isNotable", false);
+                    sendEvent("foundPrime", eventData);
 
-                                // increase batch size and notable threshold
-                                thisRef.batchSize = thisRef.nextNotable;
-                                thisRef.nextNotable *= 10;
-                                foundThisBatch = 0;
-                            }
-                            else if (foundThisBatch == thisRef.batchSize)
-                            {
-                                WritableMap eventData = Arguments.createMap();
-                                eventData.putInt("prime", ii);
-                                eventData.putInt("numFound", thisRef.primesFound);
-                                eventData.putBoolean("isNotable", false);
-                                sendEvent("foundPrime", eventData);
-
-                                // reset batch, keep current size
-                                foundThisBatch = 0;
-                            }
-                            if (thisRef.primesFound == numToFind)
-                            {
-                                break;
-                            }
-                        }
-                    }
+                    // reset batch, keep current size
+                    foundThisBatch = 0;
+                }
+                if (this.primesFound == numToFind)
+                {
+                    break;
+                }
             }
-        };
-        thread.start();
+        }
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) 

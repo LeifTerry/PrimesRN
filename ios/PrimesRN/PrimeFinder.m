@@ -14,7 +14,7 @@
     @property int primesFound;  // num primes found so far
     @property int nextNotable;  // send message for "notable" primes, i.e. 10th, 100th, 1000th etc.
     @property int batchSize;    // send message after finding this many primes
-    @property NSMutableArray* primeList;    // list of primes found, excluding 2
+    @property NSMutableArray* primeList;   // list of primes found, including '2'
 @end
 
 @implementation PrimeFinder
@@ -117,45 +117,42 @@ RCT_EXPORT_METHOD(findPrimes:(int) numToFind)
     {
         [self setupToFind:numToFind];
 
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-                       ^{
-                           NSNumber* lastPrime = [self.primeList lastObject];
-                           int foundThisBatch = 0;
+        NSNumber* lastPrime = [self.primeList lastObject];
+        int foundThisBatch = 0;
 
-                           for (int ii = lastPrime.intValue + 2; ; ii += 2) // don't bother checking evens
-                           {
-                               // newton's method for approximating sqrt(ii)
-                               self.lastRoot -= (self.lastRoot * self.lastRoot - ii) / (2 * self.lastRoot);
+        for (int ii = lastPrime.intValue + 2; ; ii += 2) // don't bother checking evens
+        {
+            // newton's method for approximating sqrt(ii)
+            self.lastRoot -= (self.lastRoot * self.lastRoot - ii) / (2 * self.lastRoot);
 
-                               if ([self isPrime:ii])
-                               {
-                                   // try a couple of things to optimize isPrime
-                                   // store prime in NSArray
-                                   [self.primeList addObject:[NSNumber numberWithInt:ii]];
+            if ([self isPrime:ii])
+            {
+                // try a couple of things to optimize isPrime
+                // store prime in NSArray
+                [self.primeList addObject:[NSNumber numberWithInt:ii]];
 
-                                   self.primesFound++;
-                                   foundThisBatch++;
+                self.primesFound++;
+                foundThisBatch++;
 
-                                   if (self.primesFound == self.nextNotable)
-                                   {
-                                       [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @YES}];
-                                       self.batchSize = self.nextNotable;
-                                       self.nextNotable *= 10; // assumes you want 10th, 100th, 1000th etc. magic number
-                                       foundThisBatch = 0;
-                                   }
-                                   else if (foundThisBatch == self.batchSize)
-                                   {
-                                       // send periodic update about primes found
-                                       [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @NO}];
-                                       foundThisBatch = 0;
-                                   }
-                                   if (self.primesFound == numToFind)
-                                   {
-                                       break;
-                                   }
-                               }
-                           }
-                        });
+                if (self.primesFound == self.nextNotable)
+                {
+                    [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @YES}];
+                    self.batchSize = self.nextNotable;
+                    self.nextNotable *= 10; // assumes you want 10th, 100th, 1000th etc. magic number
+                    foundThisBatch = 0;
+                }
+                else if (foundThisBatch == self.batchSize)
+                {
+                    // send periodic update about primes found
+                    [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @NO}];
+                    foundThisBatch = 0;
+                }
+                if (self.primesFound == numToFind)
+                {
+                    break;
+                }
+            }
+        }
     }
     // else input is invalid or trivial, TODO handle this case
 }
