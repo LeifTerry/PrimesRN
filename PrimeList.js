@@ -77,7 +77,7 @@ export default class PrimeList extends Component
         if (this.props.native)
         {
             this._subscription = nativePrimeEmitter.addListener(
-                'foundPrime', // xx!! should be a constant
+                nativePrimeFinder.foundPrimeEvent,
                 (prime) => 
                 {
                     if (prime.isNotable)

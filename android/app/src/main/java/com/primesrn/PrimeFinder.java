@@ -24,6 +24,7 @@ public class PrimeFinder extends ReactContextBaseJavaModule
     private int nextNotable;        // send message for "notable" primes, i.e. 10th, 100th, 1000th etc.
     private int batchSize;          // send message after finding this many primes
     private int[] primeList;    // list of primes found
+    private final String kFoundPrimeEvent = "foundPrimeEvent";
 
     public PrimeFinder(ReactApplicationContext reactContext)
     {
@@ -35,6 +36,21 @@ public class PrimeFinder extends ReactContextBaseJavaModule
     public String getName()
     {
         return "PrimeFinder";
+    }
+
+    @Override
+    public Map<String, Object> getConstants() 
+    {
+        final Map<String, Object> constants = new HashMap<>(); // constructor?
+        constants.put(kFoundPrimeEvent, kFoundPrimeEvent);
+        return constants;
+    }
+
+    private void sendEvent(String eventName, @Nullable WritableMap params) 
+    {
+      this.reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit(eventName, params);
     }
 
     private boolean isPrime(int num)
@@ -87,7 +103,7 @@ public class PrimeFinder extends ReactContextBaseJavaModule
                     eventData.putInt("prime", ii);
                     eventData.putInt("numFound", this.primesFound);
                     eventData.putBoolean("isNotable", true);
-                    sendEvent("foundPrime", eventData);
+                    sendEvent(kFoundPrimeEvent, eventData);
 
                     // increase batch size and notable threshold
                     this.batchSize = this.nextNotable;
@@ -100,7 +116,7 @@ public class PrimeFinder extends ReactContextBaseJavaModule
                     eventData.putInt("prime", ii);
                     eventData.putInt("numFound", this.primesFound);
                     eventData.putBoolean("isNotable", false);
-                    sendEvent("foundPrime", eventData);
+                    sendEvent(kFoundPrimeEvent, eventData);
 
                     // reset batch, keep current size
                     foundThisBatch = 0;
@@ -111,12 +127,5 @@ public class PrimeFinder extends ReactContextBaseJavaModule
                 }
             }
         }
-    }
-
-    private void sendEvent(String eventName, @Nullable WritableMap params) 
-    {
-      this.reactContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(eventName, params);
     }
 }

@@ -17,6 +17,7 @@
     @property NSMutableArray* primeList;   // list of primes found, including '2'
 @end
 
+
 @implementation PrimeFinder
 
 RCT_EXPORT_MODULE();
@@ -33,12 +34,21 @@ RCT_EXPORT_MODULE();
 
 +(BOOL) requiresMainQueueSetup
 {
-  return NO;
+    // does not modify UI so does not need main thread
+    return NO;
+}
+
+#define kFoundPrimeEvent @"foundPrimeEvent"
+
+// exporting constants allow JS to access PrimeFinder.foundPrimeEvent
+- (NSDictionary *)constantsToExport
+{
+    return @{ kFoundPrimeEvent: kFoundPrimeEvent};
 }
 
 -(NSArray<NSString*>*) supportedEvents
 {
-    return @[@"foundPrime"];
+    return @[kFoundPrimeEvent];
 }
 
 -(void) setupToFind:(int) numToFind
@@ -71,7 +81,7 @@ RCT_EXPORT_MODULE();
 
 -(BOOL) isPrime_v1:(int) n
 {
-    // we know n is not even, skip index 0 == 2
+    // we know n is not even, skip index 0 == '2'
     // start at index 1 == 3
     for (int ii = 1; ; ii ++)
     {
@@ -91,7 +101,8 @@ RCT_EXPORT_MODULE();
 -(BOOL) isPrime_v2:(int) n
 {
     // uses fast iteration
-    // has unnecessary check for (num % 2) == 0
+    // in our case, has unnecessary check for (num % 2) == 0
+    // but avoids awkward special case code for '2'
     for (NSNumber* prime in self.primeList)
     {
         if ((n % prime.intValue) == 0)
@@ -105,7 +116,6 @@ RCT_EXPORT_MODULE();
     }
     return YES;
 }
-
 
 #define isPrime isPrime_v2
 
@@ -136,7 +146,7 @@ RCT_EXPORT_METHOD(findPrimes:(int) numToFind)
 
                 if (self.primesFound == self.nextNotable)
                 {
-                    [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @YES}];
+                    [self sendEventWithName:kFoundPrimeEvent body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @YES}];
                     self.batchSize = self.nextNotable;
                     self.nextNotable *= 10; // assumes you want 10th, 100th, 1000th etc. magic number
                     foundThisBatch = 0;
@@ -144,7 +154,7 @@ RCT_EXPORT_METHOD(findPrimes:(int) numToFind)
                 else if (foundThisBatch == self.batchSize)
                 {
                     // send periodic update about primes found
-                    [self sendEventWithName:@"foundPrime" body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @NO}];
+                    [self sendEventWithName:kFoundPrimeEvent body:@{@"prime": [NSNumber numberWithInt:ii], @"numFound" : [NSNumber numberWithInt:self.primesFound], @"isNotable" : @NO}];
                     foundThisBatch = 0;
                 }
                 if (self.primesFound == numToFind)
