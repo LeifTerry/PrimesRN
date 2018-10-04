@@ -22,8 +22,8 @@ export default class PrimeList extends Component
       this.state = {
         latest      : 3,        // last prime found
         numFound    : 2,
-        done        : false,
-        notables    : [{key:'1st    ', value:2}]
+        isDone      : false,
+        notables    : []
       }
     }
     
@@ -48,15 +48,44 @@ export default class PrimeList extends Component
                 renderItem={({ item }) => <Text style={{textAlign:'right', color:'#110011', margin: 2}}>{item.value}</Text>}
             />
         </View>
-        <ActivityIndicator animating={this.state.done ? false : true}></ActivityIndicator>
+        <ActivityIndicator animating={this.state.isDone ? false : true}></ActivityIndicator>
       </View>
     );
     }
 
+    getOrdinalName(num)
+    {
+        let ordinalName = num + 'th';
+        if (num == 1)
+        {
+            ordinalName = '1st';
+        } 
+        else if (num == 2) 
+        {
+            ordinalName = '2nd';
+        } 
+        else if (num == 3) 
+        {
+            ordinalName = '3rd';
+        } 
+        else if (num == 1000000) 
+        {
+            ordinalName = 'Millionth';
+        }
+        else if ((num > 1000000) && ((num % 1000000) == 0))
+        {
+            ordinalName = (num / 1000000) + 'Mth';
+        }
+
+        return ordinalName;
+    }
+
     isPrime(num)
     {
-        // pretty fast
-        // however, since primeList contains 2, has unnecessary check for (num %2) == 0
+        // returns true if num is a prime number
+        // otherwise false
+        // assumes this.primeList is a complete list of prime numbers < num
+        // assumes this.lastRoot is >= sqrt(num)
         for (let prime of this.primeList)
         {
             if ((num % prime) == 0)
@@ -74,25 +103,32 @@ export default class PrimeList extends Component
 
     componentDidMount () 
     {
+        this.notables = [{ key: '1st', value: 2 }];
+        this.isDone = false;
+
+        this.setState(previousState => {
+            return { latest: 3, numFound: 2, notables: this.notables, isDone: false };
+        });
+
         if (this.props.native)
         {
             this._subscription = nativePrimeEmitter.addListener(
                 nativePrimeFinder.foundPrimeEvent,
-                (prime) => 
+                (event) => 
                 {
-                    if (prime.isNotable)
+                    if (event.isNotable)
                     {
-                        this.state.notables.push({key:prime.numFound+'th', value:prime.prime}); // xx!! maybe don't modify state directly
+                        this.notables.push({ key: this.getOrdinalName(event.numFound), value: event.prime });
                     }
-                    if (prime.numFound >= numPrimesToFind)
+                    if (event.numFound >= numPrimesToFind)
                     {
-                        this.state.done = true;
+                        this.isDone = true;
                         this._subscription.remove();
                         this._subscription = null;
                     }
                     this.setState(previousState => 
                         {
-                            return {latest: prime.prime, numFound:prime.numFound};
+                            return { latest: event.prime, numFound: event.numFound, notables: this.notables, isDone: this.isDone };
                         });
                 }
             );
@@ -100,10 +136,10 @@ export default class PrimeList extends Component
         }
         else
         {
-            this.primeList = [2, 3];    // start with first two primes           
-            this.lastRoot = 2;          // approximate sqrt() of last number we checked (3), no need for factors greater than this
+            this.primeList = [2, 3];        // start with first two primes           
+            this.lastRoot = 2;              // approximate sqrt() of last number we checked (3), no need for factors greater than this
             this.nextNotableOrdinal = 10;   // show 1st, 10th, etc.
-            this.batchSize = 10;        // update UI after each "batch"
+            this.batchSize = 10;            // update UI after each "batch"
 
             this._interval = setInterval(() => 
             {
@@ -125,14 +161,15 @@ export default class PrimeList extends Component
 
                         if (this.primeList.length == numPrimesToFind)
                         {
-                            this.state.done = true; // xx!! shouldn't modify state directly
+                            this.isDone = true;
                             clearInterval(this._interval);
                             this._interval = null;
                             shouldUpdateState = true;
                         }
                         if (this.primeList.length == this.nextNotableOrdinal)
                         {
-                            this.state.notables.push({key:this.nextNotableOrdinal+'th', value:ii}); // xx!! shouldn't modify state directly
+                            this.notables.push({ key: this.getOrdinalName(this.primeList.length), value: ii });
+
                             this.batchSize = this.nextNotableOrdinal;
                             this.nextNotableOrdinal *= 10; // show 10th, 100th, 1000th etc primes, magic number
                             shouldUpdateState = true;
@@ -145,7 +182,7 @@ export default class PrimeList extends Component
                         {
                             this.setState(previousState => 
                                 {
-                                    return {latest: ii, numFound: this.primeList.length};
+                                    return { latest: ii, numFound: this.primeList.length, notables:this.notables, isDone:this.isDone};
                                 });
                             break;
                         }
