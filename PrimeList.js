@@ -34,11 +34,20 @@ export default class PrimeList extends Component
         <Text style={styles.instructions}>{this.props.children}</Text>
         <Text style={styles.instructions}>{this.state.latest}</Text>
         <Text style={styles.instructions}>{'Found ' + this.state.numFound}</Text>
-        <FlatList
-          data={this.state.notables}
-          extraData={this.state}
-          renderItem={({item}) => <Text>{item.key + (item.key.length > 7 ? '\t' : '\t\t') + item.value}</Text>}
-        />
+        <View style={{ flexDirection: 'row' }}>
+            <FlatList
+                style={{ margin: 5 }}
+                data={this.state.notables}
+                extraData={this.state}
+                renderItem={({ item }) => <Text style={{ textAlign: 'left', color:'#111100', margin: 2 }}>{item.key}</Text>}
+            />
+            <FlatList
+                style={{margin:5}}
+                data={this.state.notables}
+                extraData={this.state}
+                renderItem={({ item }) => <Text style={{textAlign:'right', color:'#110011', margin: 2}}>{item.value}</Text>}
+            />
+        </View>
         <ActivityIndicator animating={this.state.done ? false : true}></ActivityIndicator>
       </View>
     );
@@ -47,7 +56,7 @@ export default class PrimeList extends Component
     isPrime(num)
     {
         // pretty fast
-        // since primeList contains 2, has unnecessary check for (num %2) == 0
+        // however, since primeList contains 2, has unnecessary check for (num %2) == 0
         for (let prime of this.primeList)
         {
             if ((num % prime) == 0)

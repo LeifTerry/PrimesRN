@@ -36,7 +36,7 @@ export default class App extends Component<Props>  // xx!! Props?
       <View style={styles.container}>
         <Text style={styles.welcome}>Prime Number Demo</Text>
 
-        <View style={{flexDirection:'row'}}>
+        <View style={{flexDirection:'row', flex:2}}>
             <PrimeList native={false}>JavaScript</PrimeList>
             <PrimeList native={true}>Native</PrimeList>
         </View>
@@ -49,17 +49,19 @@ export default class App extends Component<Props>  // xx!! Props?
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 4,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   welcome: {
+    flex: 1,
     fontSize: 20,
     textAlign: 'center',
-    margin: 10,
+    marginTop: 40,
   },
   instructions: {
+    flex: 1,
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
