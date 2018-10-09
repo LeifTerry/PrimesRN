@@ -12,7 +12,7 @@ const nativePrimeFinder = NativeModules.PrimeFinder;
 const nativePrimeEmitter = new NativeEventEmitter(nativePrimeFinder);
 
 // stop after finding this many primes
-const numPrimesToFind = 1000000; // one million
+const numPrimesToFind = 1000000; // one million, hard-coded for now
 
 export default class PrimeList extends Component
 {
@@ -20,8 +20,9 @@ export default class PrimeList extends Component
     {
       super();
       this.state = {
-        latest      : 3,        // last prime found
-        numFound    : 2,
+        // latest      : 3,        // last prime found
+        numFound    : 0,
+        isStarted   : false,
         isDone      : false,
         notables    : []
       }
@@ -48,7 +49,7 @@ export default class PrimeList extends Component
                 renderItem={({ item }) => <Text style={{textAlign:'right', color:'#110011', margin: 2}}>{item.value}</Text>}
             />
         </View>
-        <ActivityIndicator animating={this.state.isDone ? false : true}></ActivityIndicator>
+        <ActivityIndicator animating={this.isRunning() ? true : false}></ActivityIndicator>
       </View>
     );
     }
@@ -101,38 +102,53 @@ export default class PrimeList extends Component
         return true;
     }
 
-    componentDidMount () 
+    initSearch()
     {
+        // start with two primes: '2' and '3'
         this.notables = [{ key: '1st', value: 2 }];
         this.isDone = false;
 
         this.setState(previousState => {
-            return { latest: 3, numFound: 2, notables: this.notables, isDone: false };
+            return { latest: 3, numFound: 2, notables: this.notables, isDone: false, isStarted: false };
         });
+    }
 
-        if (this.props.native)
-        {
-            this._subscription = nativePrimeEmitter.addListener(
-                nativePrimeFinder.foundPrimeEvent,
-                (event) => 
-                {
-                    if (event.isNotable)
-                    {
-                        this.notables.push({ key: this.getOrdinalName(event.numFound), value: event.prime });
-                    }
-                    if (event.numFound >= numPrimesToFind)
-                    {
-                        this.isDone = true;
-                        this._subscription.remove();
-                        this._subscription = null;
-                    }
-                    this.setState(previousState => 
-                        {
-                            return { latest: event.prime, numFound: event.numFound, notables: this.notables, isDone: this.isDone };
-                        });
+    doNativeSearch() 
+    {
+        this._subscription = nativePrimeEmitter.addListener(
+            nativePrimeFinder.foundPrimeEvent,
+            (event) => {
+                if (event.isNotable) {
+                    this.notables.push({ key: this.getOrdinalName(event.numFound), value: event.prime });
                 }
-            );
-            nativePrimeFinder.findPrimes(numPrimesToFind); 
+                if (event.numFound >= numPrimesToFind) {
+                    this.isDone = true;
+                    this._subscription.remove();
+                    this._subscription = null;
+                }
+                this.setState(previousState => {
+                    return { latest: event.prime, numFound: event.numFound, notables: this.notables, isDone: this.isDone };
+                });
+                this.props.updateParentState();
+            }
+        );
+        nativePrimeFinder.findPrimes(numPrimesToFind);
+    }
+
+    isRunning()
+    {
+        return (this.state.isStarted && !this.state.isDone);
+    }
+
+    doSearch()
+    {
+        this.initSearch();
+        this.setState(previousState => {
+            return { isStarted: true };
+        });
+        if (this.props.native) 
+        {
+            this.doNativeSearch();
         }
         else
         {
@@ -141,49 +157,42 @@ export default class PrimeList extends Component
             this.nextNotableOrdinal = 10;   // show 1st, 10th, etc.
             this.batchSize = 10;            // update UI after each "batch"
 
-            this._interval = setInterval(() => 
-            {
+            this._interval = setInterval(() => {
                 let foundThisBatch = 0;
 
                 // find the next prime
                 // only need to check the odd numbers
                 // start where we left off
-                for (let ii = this.primeList[this.primeList.length-1] + 2; ; ii += 2)
-                {
+                for (let ii = this.primeList[this.primeList.length - 1] + 2; ; ii += 2) {
                     // newton's method for sqrt 
                     this.lastRoot -= (this.lastRoot * this.lastRoot - ii) / (2 * this.lastRoot);
-                    if (this.isPrime(ii))
-                    {
+                    if (this.isPrime(ii)) {
                         foundThisBatch++;
                         let shouldUpdateState = false;
 
                         this.primeList.push(ii);
 
-                        if (this.primeList.length == numPrimesToFind)
-                        {
+                        if (this.primeList.length == numPrimesToFind) {
                             this.isDone = true;
                             clearInterval(this._interval);
                             this._interval = null;
                             shouldUpdateState = true;
                         }
-                        if (this.primeList.length == this.nextNotableOrdinal)
-                        {
+                        if (this.primeList.length == this.nextNotableOrdinal) {
                             this.notables.push({ key: this.getOrdinalName(this.primeList.length), value: ii });
 
                             this.batchSize = this.nextNotableOrdinal;
                             this.nextNotableOrdinal *= 10; // show 10th, 100th, 1000th etc primes, magic number
                             shouldUpdateState = true;
                         }
-                        if (foundThisBatch == this.batchSize)
-                        {
+                        if (foundThisBatch == this.batchSize) {
                             shouldUpdateState = true;
                         }
-                        if (shouldUpdateState)
-                        {
-                            this.setState(previousState => 
-                                {
-                                    return { latest: ii, numFound: this.primeList.length, notables:this.notables, isDone:this.isDone};
-                                });
+                        if (shouldUpdateState) {
+                            this.setState(previousState => {
+                                return { latest: ii, numFound: this.primeList.length, notables: this.notables, isDone: this.isDone };
+                            });
+                            this.props.updateParentState();
                             break;
                         }
 
@@ -193,8 +202,14 @@ export default class PrimeList extends Component
         }
     }
 
+    componentDidMount () 
+    {
+        this.props.onRef(this);
+    }
+
     componentWillUnmount() 
     {
+        this.props.onRef(undefined);
         if (this._subscription)
         {
             this._subscription.remove();
