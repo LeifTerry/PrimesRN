@@ -7,9 +7,11 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Button} from 'react-native';
+import {Platform, StyleSheet, Text, View} from 'react-native';
+import { Button } from 'react-native-elements';
 import PrimeList from './PrimeList';
 
+const introText = 'Press \'Start\' to find the first Nth prime numbers.';
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
   android:
@@ -41,6 +43,7 @@ export default class App extends Component
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Prime Number Demo</Text>
+        <Text style={styles.instructions}>{introText}</Text>
 
         <View style={{flexDirection:'row', flex:4, marginBottom:5}}>
                 <PrimeList native={false} 
@@ -61,9 +64,14 @@ export default class App extends Component
         </View>
 
         <Button
-            title="Start"
-            color="#115511"
-            accessibilityLabel="Start finding prime numbers"
+            style={{marginTop:10, marginBottom:10}}
+            raised
+            borderRadius={8}            
+            title='Start'
+            color='#FFFFFF'
+            backgroundColor='#228822'
+            fontSize={20}
+            accessibilityLabel='Start finding prime numbers'
             disabled={this.state.isRunning}
             onPress={() => {
                 this.primeList.doSearch();
