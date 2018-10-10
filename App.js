@@ -42,9 +42,22 @@ export default class App extends Component
       <View style={styles.container}>
         <Text style={styles.welcome}>Prime Number Demo</Text>
 
-        <View style={{flexDirection:'row', flex:2}}>
-                <PrimeList native={false} onRef={ref => (this.primeList = ref)} updateParentState = {this.updateState} >JavaScript</PrimeList>
-                <PrimeList native={true} onRef={ref => (this.nativePrimeList = ref)} updateParentState = {this.updateState} >Native</PrimeList>
+        <View style={{flexDirection:'row', flex:4, marginBottom:5}}>
+                <PrimeList native={false} 
+                    onRef={ref => (this.primeList = ref)} 
+                    updateParentState = {this.updateState}
+                    themeColor = {'#882222'}
+                    color = {'#882222'}>
+                        JavaScript
+                </PrimeList>
+                <PrimeList 
+                    native={true} 
+                    onRef={ref => (this.nativePrimeList = ref)} 
+                    updateParentState = {this.updateState}
+                    themeColor = {'#222288'}
+                    color={'#222288'}>
+                        Native
+                </PrimeList>
         </View>
 
         <Button
@@ -69,21 +82,24 @@ export default class App extends Component
 
 const styles = StyleSheet.create({
   container: {
-    flex: 4,
-    justifyContent: 'center',
+    flex: 6,
+    // justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#F5FCFF',    
   },
   welcome: {
     flex: 1,
+    // justifyContent: 'center',
     fontSize: 20,
     textAlign: 'center',
     marginTop: 40,
   },
   instructions: {
     flex: 1,
+    // justifyContent: 'center',
     textAlign: 'center',
     color: '#333333',
+    marginTop: 5,
     marginBottom: 5,
   },
 });

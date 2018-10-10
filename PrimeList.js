@@ -31,10 +31,10 @@ export default class PrimeList extends Component
     render() 
     {
     return (
-      <View style={styles.container}>
-        <Text style={styles.instructions}>{this.props.children}</Text>
-        <Text style={styles.instructions}>{this.state.latest}</Text>
-        <Text style={styles.instructions}>{'Found ' + this.state.numFound}</Text>
+      <View style={[styles.container, {borderColor:this.props.themeColor}]}>
+        <Text style={[styles.title, {color:this.props.themeColor}]}>{this.props.children}</Text>
+        <Text style={styles.result}>{this.state.latest}</Text>
+        <Text style={styles.result}>{'Found ' + this.state.numFound}</Text>
         <View style={{ flexDirection: 'row' }}>
             <FlatList
                 style={{ margin: 5 }}
@@ -225,10 +225,25 @@ export default class PrimeList extends Component
 } // end PrimeList Component
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF',
+        borderColor: '#111111',
+        borderWidth: 1,
+        borderRadius: 8,
+        margin: 1,
+    },
+    title: {
+        textAlign: 'center',
+        color: '#080808',
+        fontSize: 18,
+        marginBottom: 5,
+    },
+    result: {
+        textAlign: 'center',
+        color: '#333333',
+        fontSize: 14,
+        marginBottom: 4,
+    },
 });
